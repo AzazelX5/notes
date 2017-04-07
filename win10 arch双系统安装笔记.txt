@@ -1,0 +1,207 @@
+启动模式：UEFI
+分区格式：GPT
+
+安装顺序：win10  arch
+
+一、Win10安装
+	重点：建议在装win10时用win10安装程序的分区工具分好区
+	我的分区：
+		1.先分一个合适大小的安装win10分区
+		    (建议常用分70G,不常用分50G）
+		    第一次分区的时候安装程序会默认分为以下几个区：
+		    恢复分区
+		    系统分区
+		    保留分区
+		    主分区
+		2.然后分一个放win10文件和装win10程序的分区（大小视自己情况定）
+		 （建议一般应用程序别装C盘）
+		3.接着分一个arch的根分区/mnt（50G左右）
+		4.接着分一个arch的home分区/home（大小视自己情况定）
+		5.最后分一个交换分区（和内存一样大）
+	总体如下：
+		/dev/sda1 win10	恢复分区
+		/dev/sda2 win10 系统分区
+		/dev/sda3 win10 保留分区
+		/dev/sda4 win10 主分区（装win10）
+		/dev/sda5 win10 win10资料和安装应用分区
+		/dev/sda6 arch  根分区：挂载/mnt
+		/dev/sda7 arch  home分区：挂载/mnt/home
+		/dev/sda8 arch	交换分区
+
+	其实这里分好区在sda2上装win10,其他分区暂时不动	
+二、arch安装（需要网络）
+    1.重点在arch的安装,首先还是确认一下是否支持uefi启动吧
+	输入命令：
+	    #efivar -l 
+	    输出一大堆你看不懂的东西就是支持
+    2.链接网络
+	有线：#dhcpcd
+	无线：#wifi-menu
+	然后ping一下百度看网通不通：#ping baidu.com
+    3.分区在装win10时已分好,这里直接创建文件系统
+	这里我主要以我的分区为例
+	查看分区：# lsblk  
+
+	格式化分区：
+	  格式化根分主：# mkfs.ext4 /dev/sda6 
+	  格式化home分区：# mkfs.ext4 /dev/sda7  
+	  格式化交换分区：# mkswap /dev/sda8 
+	  接着就把交换分区挂载了，就不用管它了：# swapon /dev/sda8
+	挂载分区：
+	  挂载根分区：# mount /dev/sda6 /mnt
+	  创建并挂载home分区:# mkdir /mnt/home
+			  # mount /dev/sda7 /mnt/home
+	创建并挂载boot分区:(这里主要用于win10和arch启动)
+			# mkdir /mnt/boot/EFI
+			# mount /dev/sda2 /mnt/boot/EFI
+	4.安装基础系统(以中科大源为例)
+	  在/etc/pacman.d/mirrorlist加入中科大的源
+		# nano /etc/pacman.d/mirrorlist
+		在下面这几行后面加入
+		##
+		## Arch Linux repository mirrorlist
+		## Sorted by mirror score from mirror status page
+		## Generated on 2012-MM-DD
+		##
+		
+		Sever = http://mirrors.ustc.edu.cn/archlinux/$repo/os/$arch
+
+        	然后依次ctrl+x  y  Enter 保存退出
+
+	接着强制刷新：
+	  # pacman -Sy
+
+	刷新完后就是安装了：(网速不快就换个源试试,自行百度archlinux国内源)
+	  # pacstrap -i /mnt base base-devel
+	  备注：在这一步安装出错解决方法
+		1.删除后重来
+		  # rm /mnt/var/cache/pacman/pkg/*.part 
+		2.可能用的不是最新版的安装镜像,强制刷新重来
+		  # pacman -Syu
+		3.还是解决不了那就应该是安装步骤出错了吧！重来吧
+	安装完后就生成 fstab:
+	  # genfstab -U -p /mnt >> /mnt/etc/fstab
+    5.配置基础系统
+	5.1.chroot 到新系统：
+	  # arch-chroot /mnt /bin/bash
+	5.2.设置主机名(随便设置，自己怎么喜欢怎么来)
+	  # echo 你的主机名 > /etc/hostname
+	  并在 /etc/hosts 添加同样的主机名：
+	    #nano etc/hosts
+	  然后照着下面的格式改
+	    #<ip-address>      <hostname.domain.org>      <hostname>
+	    127.0.0.1          localhost.localdomain      localhost        你的主机名
+	    ::1                localhost.localdomain      localhost         你的主机名
+	5.3.设置Locale
+	  # nano /etc/locale.gen
+	  直接在最后添加：(当然不嫌累你可以找到它并反注释)
+	    en_US.UTF-8 UTF-8
+	    zh_CN.UTF-8 UTF-8
+	  接着执行locale-gen以生成locale讯息：
+	    # locale-gen
+	  创建 locale.conf 并提交您的本地化选项：
+	    # echo LANG=en_US.UTF-8 > /etc/locale.conf
+	  注：别在这设置成中文的,不然会发生奇怪的事情
+	5.4.设置时间
+	  # ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+	  这里有个win10和arch时间冲突的问题(具体自行百度),有两种解决方案
+	  (1)win10和arch都设为本地时间
+	      win10默认为本地时间
+	      arch执行：
+			# hwclock --systohc --localtime
+	  (2)win10和arch都设为UTC时间
+	      win10:自行百度
+	      arch执行:
+			# hwclock --systohc --utc
+	5.5.创建初始 ramdisk 环境
+	  # mkinitcpio -p linux
+	5.6.设置root密码(请牢记,别泄漏)
+	  # passwd
+	5.7.设置双系统启动(重点)
+	  (1)执行：# bootctl install
+	     bootctl 会创建 /boot/loader/entries/arch.conf
+	  (2)执行：# nano /boot/loader/entries/arch.conf 
+	     在其中添加以下内容：
+		title          Arch Linux
+		linux          /vmlinuz-linux
+		initrd         /initramfs-linux.img
+		options        root=/dev/sda2 rw
+	  (3)执行：# nano /boot/loader/loader.conf
+	     在其中添加以下内容：
+		default  arch
+		timeout  5
+	5.8.其他(可选)
+	    建议：安装networkmanager或dialog(主要是针对没有网线的情况，避免进入arch没有网的尴尬)
+		# pacman -S dialog
+		# pacman -S networkmanager
+			设置开机启动: # systemctl enable NetworkManager
+	    建议都安装吧，以防万一
+	    有些电脑的无线网卡可能需要固件：
+		# pacman -S zd1211-firmware
+    6.卸载分区并重启系统
+	离开 chroot 环境：
+	  # exit
+	重启计算机：
+	  # reboot
+
+三、arch图形界面安装
+    1.用户管理
+	一般情况下我们是不用root账户的,所以就来创建一个普通账户吧
+	  # useradd -m -g users -s /bin/bash <用户名>
+	该命令创建一个名为 <用户名> 的用户,指定登陆 shell 为 bash,所属主用户组 users,用户文件夹位于 /home/<用户名>。
+	  # passwd <用户名>   # 设置密码
+	  #gpasswd -a <用户名> audio  #加入audio组
+	  #gpasswd -a <用户名> wheel  #加入wheel组
+	然后为我们创建的用户配置权限：
+	  # EDITOR=nano visudo
+	反注释该行（删去 # ）：
+	  # %wheel ALL=(ALL) ALL
+	添加：
+	  用户 ALL=(ALL) ALL
+    
+	有网线：
+	  # dhcpcd 
+	然后ping一下百度,看网通不通
+	没网线：
+	  (1)之前装了networksmanager：
+		#nmtui
+	     会弹出一个图形界面,链接到你的wifi就行
+	  (2)没装networkmanager的
+	     方法就是：去找根网线吧,或者重装吧..........
+    2.安装显卡驱动
+	# pacman - S <驱动包>
+	联想：xf86-video-intel 
+	其他：移步wiki
+    3.安装X窗口系统
+	# pacman -S xorg-server xorg-server-utils    # 安装 Xorg Server
+	# pacman -S xf86-input-synaptics    # 可选，触摸板支持
+	# pacman -S ttf-dejavu wqy-microhei    # 可选，Dejavu 与文泉驿 - 微米黑字体
+    4.安装桌面环境
+	# pacman -S <桌面环境组>
+	以Xfce为例：
+	  # pacman -S xfce4 xfce4-goodies
+	设置启动方式：(以startx为例,其他移步wiki)
+ 	  (1)从系统复制.xinitrc到/etc/X11/xinit/xinitrc
+		# cp /etc/X11/xinit/xinitrc ~/.xinitrc
+ 	  (2)编辑xinitrc
+		# nano /etc/X11/xinit/xinitrc
+		在最后一行改为
+ 		  exec startxfce4
+ 	设置开机启动：
+	  #nano /home/你的用户名/.bash_profile
+	  在最后添加
+	    startxfce4
+    5.安装输入法
+	5.1安装fcitx
+	  # pacman -S fcitx-im fcitx-configtool
+	5.2配置
+	  # nano /etc/X11/xinit/xinitrc
+	  在exec startxfce4前面添加以下内容(注意：一定要在前面)
+	    export LANG=zh_CN.UTF-8 (这里是设置图形界面中文化)
+ 	    export GTK_IM_MODULE=fcitx
+	    export QT_IM_MODULE=fcitx
+	    export XMODIFIERS="@im=fcitx"
+	5.3添加输入法
+	  # fcitx-configtool
+
+
