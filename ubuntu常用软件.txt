@@ -1,0 +1,57 @@
+软件安装： sudo apt-get install 软件名
+DEB安装包：sudo dpkj -i 包名
+pip安装Python第三方库：sudo pip install 库名
+
+编程软件：
+    一、python
+	1.pycharm
+	    官网下载.tar.gz文件，解压到想要存放的位置（如：/opt/pycharm）
+	    创建启动图标：
+	        (1).sudo gedit /usr/share/applications/Pycharm.desktop 
+	        (2).然后输入以下内容，注意Exec和Icon需要找到正确的路径
+	            [Desktop Entry]
+		    Encoding=UTF-8
+		    Name=Pycharm
+		    Comment=Pycharm IDE
+		    Exec=sh /opt/pycharm/bin/pycharm.sh
+		    Icon=/opt/pycharm/bin/pycharm.png
+		    Terminal=false
+		    StartupNotify=true
+		    Type=Application
+		    Categories=Application;Development;
+		(3).然后进入/usr/share/applications/将Pycharm.desktop复制到~/Desktop下 ,然后修改可执行chmod +777 ./Pycharm.desktop 
+	2.ipython(pip安装)
+	3.pip豆瓣源：
+	    在/home/用户名/.config/pip 下创建文件 pip.conf
+	    文件中写如下内容:
+	        [global]
+                timeout = 60
+                index-url = https://pypi.doubanio.com/simple
+        4.常用第三方库
+            matplotlib : Python 的 2D绘图库。
+            numpy ：用python实现的科学计算包，可用来存储和处理大型矩阵。
+	   
+工具软件：
+	浏览器：chromium
+	壁纸：爱壁纸HD（DEB）
+	音乐：网易云(DEB)
+	输入法：搜狗(DEB)
+	虚拟机：virtualbox(DEB)
+VPN（shadowsocks-QT5）：
+	sudo add-apt-repository ppa:hzwhuang/ss-qt5
+	sudo apt-get update
+	sudo apt-get install shadowsocks-qt5
+
+Ubuntu下截图与录制视频并作成gif图片：
+	1.命令行安装软件
+	      sudo apt-get install kazam
+	      sudo apt-get install mplayer
+　　	      sudo apt-get install imagemagick
+	2.使用 kazam 来录制视频：
+	3.将mp4格式转化为gif：
+	      （1）将mp4格式转化为 jpg 格式的图片; 
+	           mplayer -ao null tabs.mp4 -vo jpeg:outdir=./tabs
+	           上面命令大致意思是将刚刚生成的 tabs.mp4 在 tabs文件夹中生成 jpg 图片
+	      （2）将生成的 jpg 格式的图片转化为 gif 格式的图片。
+	           convert ./tabs/*.jpg view.gif
+	           在当前目录下生成 view.gif 。这时就已经是 gif 格式的图片了。
