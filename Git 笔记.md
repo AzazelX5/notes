@@ -51,9 +51,9 @@
 >git checkout -b 分支名
 	
 	注：参数-b表示创建并切换，相当于以下两条命令：
-			git branch 分支名
-			git checkout 分支名
-		直接切换分支不需要参数 -b
+		git branch 分支名
+		git checkout 分支名
+	   直接切换分支不需要参数 -b
 
 15、合并分支：
 >git merge 要合并的分支名
@@ -77,7 +77,7 @@
 	
 	注：git stash apply 恢复后stash内容并不删除，你需要用git stash drop来删除
 	    git stash pop 恢复的同时把stash内容也删了
-		可以储藏多个工作区，恢复指定工作区用：git stash apply stash@{0}，其中stash@{0}可以通过git stash list查看
+	    可以储藏多个工作区，恢复指定工作区用：git stash apply stash@{0}，其中stash@{0}可以通过git stash list查看
 
 20、删除没有合并过的分支：
 >git branch -D 分支名
@@ -91,7 +91,7 @@
 >git clone 远程仓库地址
 	
 	注：ssh地址用: git clone git@github.com:AzazelX5/notes.git
-		https地址用: git clone https://github.com/AzazelX5/notes.git
+	    https地址用: git clone https://github.com/AzazelX5/notes.git
 
 23、从本地推送分支：
 >git push -u origin 分支名
@@ -100,8 +100,7 @@
 
 24、从远程仓库更新本地分支：
 >git pull 
->>命令详解见[易百教程：git pull 命令][1]
-[1]:http://www.yiibai.com/git/git_pull.html
+>>命令详解见[易百教程：git pull 命令](http://www.yiibai.com/git/git_pull.html)
 
 25、标签：
 >git tag 标签名
