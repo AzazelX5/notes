@@ -37,6 +37,10 @@ pip安装Python第三方库：sudo pip install 库名
 	音乐：网易云(DEB)
 	输入法：搜狗(DEB)
 	虚拟机：virtualbox(DEB)
+
+    树形目录结构：tree
+    系统运行状态：htop
+
 VPN（shadowsocks-QT5）：
 	sudo add-apt-repository ppa:hzwhuang/ss-qt5
 	sudo apt-get update
@@ -54,4 +58,5 @@ Ubuntu下截图与录制视频并作成gif图片：
 	           上面命令大致意思是将刚刚生成的 tabs.mp4 在 tabs文件夹中生成 jpg 图片
 	      （2）将生成的 jpg 格式的图片转化为 gif 格式的图片。
 	           convert ./tabs/*.jpg view.gif
-	           在当前目录下生成 view.gif 。这时就已经是 gif 格式的图片了。
+	           在当前目录下生成 view.gif 。这时就已经是 gif格式的图片了。
+
